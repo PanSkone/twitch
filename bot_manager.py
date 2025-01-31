@@ -5,6 +5,8 @@ from flask import Flask, jsonify, send_from_directory
 from twitchio.ext import commands
 import threading
 import os
+import asyncio
+import time
 
 bot_running = False
 bot_instance = None
@@ -24,11 +26,18 @@ def start_bot():
 
 def stop_bot():
     global bot_instance, bot_running
-    if bot_running and bot_instance:
-        bot_running = False
-        try:
-            asyncio.run(bot_instance.close())
-        except RuntimeError as e:
-            return f"Błąd podczas zatrzymywania bota: {str(e)}"
-        return "Bot zatrzymany"
-    return "Bot nie jest uruchomiony"
+
+    if not bot_running:
+        return "Bot nie jest uruchomiony"
+
+    bot_running = False
+    try:
+        if bot_instance:
+            asyncio.run(bot_instance.close())  # Zamykamy bota poprawnie
+            bot_instance = None
+        print("Bot został zatrzymany. Zaczekaj 10 sekund przed ponownym uruchomieniem.")
+        asyncio.sleep(10)  # Oczekiwanie 10 sekund
+    except RuntimeError as e:
+        return f"Błąd podczas zatrzymywania bota: {str(e)}"
+
+    return "Bot zatrzymany. Możesz uruchomić go ponownie."
