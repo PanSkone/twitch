@@ -1,7 +1,6 @@
 # app.py
 from flask import Flask, jsonify, send_from_directory
 from bot_manager import start_bot, stop_bot, bot_running
-from database import init_db
 
 app = Flask(__name__)
 
