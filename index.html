@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontrola Bota Twitch</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { font-size: 18px; padding: 10px 20px; margin: 10px; cursor: pointer; }
+        #status { font-size: 20px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Kontrola Bota Twitch</h1>
+    <button onclick="startBot()">Start</button>
+    <button onclick="stopBot()">Stop</button>
+    <p id="status">Status: Nieznany</p>
+
+    <script>
+        async function updateStatus() {
+            let response = await fetch('/status');
+            let data = await response.json();
+            document.getElementById("status").innerText = "Status: " + (data.running ? "Działa" : "Zatrzymany");
+        }
+
+        async function startBot() {
+            await fetch('/start');
+            updateStatus();
+        }
+
+        async function stopBot() {
+            await fetch('/stop');
+            updateStatus();
+        }
+
+        updateStatus();
+    </script>
+</body>
+</html>
