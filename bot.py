@@ -17,7 +17,7 @@ class Bot(commands.Bot):
         super().__init__(
             token=os.getenv('BOT_TOKEN'),  # Zmienna środowiskowa
             prefix='!',
-            initial_channels=['blejn_']
+            initial_channels=['loltyler1']
         )
         self.session = aiohttp.ClientSession()  # Tworzymy sesję HTTP
         self.message_buffer = deque()  # Bufor do przechowywania wiadomości
@@ -40,8 +40,8 @@ class Bot(commands.Bot):
             return
 
         # Sprawdzamy poprawność wiadomości
-        if not await self.is_valid_message(message):  # UŻYWAMY self.is_valid_message()
-            return  # Odrzucamy wiadomość, jeśli nie spełnia warunku
+        # if not await self.is_valid_message(message):  # UŻYWAMY self.is_valid_message()
+        #     return  # Odrzucamy wiadomość, jeśli nie spełnia warunku
 
         print(f"{message.author.name}: {message.content}")
 
