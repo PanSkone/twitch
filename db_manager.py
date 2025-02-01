@@ -30,8 +30,8 @@ def insert_chat_log(logs):
     if connection:
         cursor = connection.cursor()
         query = """
-            INSERT INTO chat_logs (username, message)
-            VALUES (%s, %s)
+            INSERT INTO chat_logs (username, message, match_id)
+            VALUES (%s, %s, %s)
         """
         # Wykorzystujemy executemany do dodania wielu rekordów
         cursor.executemany(query, logs)

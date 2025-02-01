@@ -15,11 +15,12 @@ loop = None  # Globalna pętla zdarzeń
 
 async def run_bot():
     global bot_instance
-    bot_instance = Bot()
+    bot_instance = Bot(current_match_id)  # Przekazujemy current_match_id do instancji Bota
     await bot_instance.start()
 
+# Funkcja startująca bota
 def start_bot(match_id):
-    global bot_running, current_match_id, loop
+    global bot_instance, bot_running, current_match_id, loop  # Zmienna globalna
 
     if bot_running:
         return f"Bot jest już uruchomiony dla meczu ID {current_match_id}. Zatrzymaj go przed uruchomieniem nowego."
@@ -35,8 +36,9 @@ def start_bot(match_id):
 
     return f"Bot uruchomiony dla meczu ID {match_id}"
 
+# Funkcja zatrzymująca bota
 def stop_bot(match_id):
-    global bot_instance, bot_running, current_match_id, loop
+    global bot_instance, bot_running, current_match_id, loop  # Zmienna globalna
 
     if not bot_running or current_match_id != match_id:
         return f"Bot nie jest uruchomiony dla meczu ID {match_id}"
