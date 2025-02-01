@@ -10,34 +10,47 @@ import time
 
 bot_running = False
 bot_instance = None
+current_match_id = None  # ID meczu, dla którego działa bot
+loop = None  # Globalna pętla zdarzeń
 
 async def run_bot():
     global bot_instance
     bot_instance = Bot()
     await bot_instance.start()
 
-def start_bot():
-    global bot_running
-    if not bot_running:
-        bot_running = True
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(run_bot())
+def start_bot(match_id):
+    global bot_running, current_match_id, loop
 
-def stop_bot():
-    global bot_instance, bot_running
+    if bot_running:
+        return f"Bot jest już uruchomiony dla meczu ID {current_match_id}. Zatrzymaj go przed uruchomieniem nowego."
 
-    if not bot_running:
-        return "Bot nie jest uruchomiony"
+    bot_running = True
+    current_match_id = match_id
+
+    loop = asyncio.new_event_loop()  
+    asyncio.set_event_loop(loop)
+    bot_task = loop.create_task(run_bot())  # Tworzymy zadanie
+    thread = threading.Thread(target=loop.run_forever, daemon=True)
+    thread.start()
+
+    return f"Bot uruchomiony dla meczu ID {match_id}"
+
+def stop_bot(match_id):
+    global bot_instance, bot_running, current_match_id, loop
+
+    if not bot_running or current_match_id != match_id:
+        return f"Bot nie jest uruchomiony dla meczu ID {match_id}"
 
     bot_running = False
-    try:
-        if bot_instance:
-            asyncio.run(bot_instance.close())  # Zamykamy bota poprawnie
-            bot_instance = None
-        print("Bot został zatrzymany. Zaczekaj 10 sekund przed ponownym uruchomieniem.")
-        asyncio.sleep(10)  # Oczekiwanie 10 sekund
-    except RuntimeError as e:
-        return f"Błąd podczas zatrzymywania bota: {str(e)}"
+    current_match_id = None  # Resetujemy ID meczu
 
-    return "Bot zatrzymany. Możesz uruchomić go ponownie."
+    if bot_instance:
+        future = asyncio.run_coroutine_threadsafe(bot_instance.close(), loop)  
+        future.result()  # Czekamy na zamknięcie bota
+        bot_instance = None
+
+    if loop:
+        loop.call_soon_threadsafe(loop.stop)  # Zatrzymujemy pętlę asyncio
+        loop = None
+
+    return f"Bot zatrzymany dla meczu ID {match_id}"

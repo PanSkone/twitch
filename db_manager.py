@@ -23,14 +23,14 @@ def create_connection():
 
 # Usuwamy funkcję create_table, ponieważ tabela już istnieje w bazie danych
 
-def insert_chat_log(username, message):
+def insert_chat_log(username, message, match_id=None):
     connection = create_connection()
     if connection:
         cursor = connection.cursor()
         cursor.execute("""
             INSERT INTO chat_logs (username, message)  # Zakładamy, że tabela chat_logs już istnieje
             VALUES (%s, %s)
-        """, (username, message))
+        """, (username, message, match_id))
         connection.commit()  # Zatwierdzamy zmiany w bazie danych
         cursor.close()  # Zamykamy kursor
 

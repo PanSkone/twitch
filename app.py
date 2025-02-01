@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, jsonify, send_from_directory
-from bot_manager import start_bot, stop_bot, bot_running
+from bot_manager import start_bot, stop_bot, bot_running, current_match_id
 
 app = Flask(__name__)
 
@@ -45,7 +45,19 @@ def get_match(match_id):
         })
     return jsonify({"error": "Mecz nie znaleziony"}), 404
 
+@app.route('/start_match/<int:match_id>', methods=['GET'])
+def start_match(match_id):
+    response = start_bot(match_id)
+    return jsonify({"status": response})
 
+@app.route('/stop_match/<int:match_id>', methods=['GET'])
+def stop_match(match_id):
+    response = stop_bot(match_id)
+    return jsonify({"status": response})
+
+@app.route('/status_match', methods=['GET'])
+def status_match():
+    return jsonify({"running": bot_running, "match_id": current_match_id})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

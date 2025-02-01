@@ -22,10 +22,16 @@
     <br>
     <button onclick="goBack()">Powrót</button>
 
+    <button id="start-bot-btn" onclick="startBot()">Start Bota</button>
+    <button id="stop-bot-btn" onclick="stopBot()">Stop Bota</button>
+    <button onclick="goBack()">Powrót</button>
+
     <script>
+        let matchId;
+
         async function loadMatchDetails() {
             const params = new URLSearchParams(window.location.search);
-            const matchId = params.get("id");
+            matchId = params.get("id");
             if (!matchId) return;
 
             let response = await fetch(`/match/${matchId}`);
@@ -35,6 +41,30 @@
             document.getElementById("team1-id").innerText = data.team1_id;
             document.getElementById("team2-id").innerText = data.team2_id;
             document.getElementById("match-time").innerText = data.time_start_match;
+
+            updateStatus();
+        }
+
+        async function updateStatus() {
+            let response = await fetch('/status_match');
+            let data = await response.json();
+            document.getElementById("bot-status").innerText = data.running 
+                ? `Działa dla meczu ID ${data.match_id}` 
+                : "Zatrzymany";
+        }
+
+        async function startBot() {
+            let response = await fetch(`/start_match/${matchId}`);
+            let data = await response.json();
+            alert(data.status);
+            updateStatus();
+        }
+
+        async function stopBot() {
+            let response = await fetch(`/stop_match/${matchId}`);
+            let data = await response.json();
+            alert(data.status);
+            updateStatus();
         }
 
         function goBack() {

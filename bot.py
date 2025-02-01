@@ -12,7 +12,7 @@ class Bot(commands.Bot):
         super().__init__(
             token='oauth:a0yvoysbq9ox6dhj9f7smiinqckw51',  # Twój token
             prefix='!',
-            initial_channels=['zackrawrr']
+            initial_channels=['blejn_']
         )
         self.session = aiohttp.ClientSession()  # Tworzymy sesję HTTP
 
