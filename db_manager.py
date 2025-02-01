@@ -1,7 +1,10 @@
 # db_manager.py
 import mysql.connector
 from mysql.connector import Error
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 connection = None  # Globalna zmienna połączenia
 
 def create_connection():
@@ -9,10 +12,10 @@ def create_connection():
     if connection is None or not connection.is_connected():
         try:
             connection = mysql.connector.connect(
-                host='localhost',
-                database='chat_db',  # Twoja baza danych
-                user='root',  # Twoje dane logowania do MySQL
-                password=''  # Twoje hasło (jeśli masz ustawione)
+                host=os.getenv('DB_HOST'),
+                database=os.getenv('DB_NAME'),
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD')
             )
             if connection.is_connected():
                 print("Połączono z bazą danych")

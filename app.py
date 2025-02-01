@@ -1,20 +1,43 @@
 # app.py
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from bot_manager import start_bot, stop_bot, bot_running, current_match_id
+from dotenv import load_dotenv
+import os
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Wczytanie zmiennych środowiskowych
+load_dotenv()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY')
+
+API_KEY = os.getenv('API_KEY', 'default_api_key')  # Klucz do autoryzacji
+
+limiter = Limiter(key_func=get_remote_address)  
+limiter.init_app(app)  # Teraz poprawnie podpinamy do aplikacji Flask
+
+def authenticate_request(req):
+    """Prosta autoryzacja na podstawie klucza API."""
+    auth_header = req.headers.get("Authorization")
+    if not auth_header or auth_header.split(" ")[-1] != API_KEY:
+        return False
+    return True
 
 @app.route('/')
 def serve_html():
     return send_from_directory(".", "index.html")
 
 @app.route('/start', methods=['GET'])
+@limiter.limit("5 per minute")  # Limit 5 żądań na minutę na IP
 def start():
+    if not authenticate_request(request):
+        return jsonify({"error": "Unauthorized"}), 403
     if not bot_running:
         start_bot()
         return jsonify({"status": "Bot uruchomiony"})
     return jsonify({"status": "Bot już działa"})
-
+    
 @app.route('/stop', methods=['GET'])
 def stop():
     result = stop_bot()

@@ -5,12 +5,15 @@ import threading
 import os
 from db_manager import insert_chat_log
 import aiohttp
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Tworzenie aplikacji Flask
 class Bot(commands.Bot):
     def __init__(self):
         super().__init__(
-            token='oauth:a0yvoysbq9ox6dhj9f7smiinqckw51',  # Twój token
+            token=os.getenv('BOT_TOKEN'),  # Zmienna środowiskowa
             prefix='!',
             initial_channels=['blejn_']
         )
