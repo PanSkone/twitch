@@ -24,20 +24,19 @@ def create_connection():
             connection = None
     return connection
 
-# Usuwamy funkcję create_table, ponieważ tabela już istnieje w bazie danych
-
-def insert_chat_log(username, message, match_id=None):
+def insert_chat_log(logs):
+    """Funkcja do wstawiania wielu wiadomości do bazy danych za jednym razem."""
     connection = create_connection()
     if connection:
         cursor = connection.cursor()
-        cursor.execute("""
-            INSERT INTO chat_logs (username, message)  # Zakładamy, że tabela chat_logs już istnieje
+        query = """
+            INSERT INTO chat_logs (username, message)
             VALUES (%s, %s)
-        """, (username, message, match_id))
+        """
+        # Wykorzystujemy executemany do dodania wielu rekordów
+        cursor.executemany(query, logs)
         connection.commit()  # Zatwierdzamy zmiany w bazie danych
         cursor.close()  # Zamykamy kursor
-
-
 
 
 # Funkcja do pobierania danych z bazy
