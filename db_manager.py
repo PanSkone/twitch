@@ -60,3 +60,21 @@ def fetch_match_by_id(match_id):
         cursor.close()
         return match
     return None
+
+# Pobiera tagi drużyn na podstawie match_id
+def fetch_team_tags_by_match(match_id):
+    connection = create_connection()
+    if connection:
+        cursor = connection.cursor()
+        query = """
+            SELECT t1.tag, t2.tag 
+            FROM matches m
+            JOIN teams t1 ON m.team1_id = t1.id
+            JOIN teams t2 ON m.team2_id = t2.id
+            WHERE m.id = %s
+        """
+        cursor.execute(query, (match_id,))
+        result = cursor.fetchone()  # Pobieramy pierwszy wynik
+        cursor.close()
+        return result if result else (None, None)  # Zwracamy tagi lub None
+    return None, None
