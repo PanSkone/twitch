@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Buttons</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <style>
+        .calendar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #343a40;
+            padding: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 100%;
+            white-space: nowrap;
+        }
+        .day-card {
+            width: 160px;
+            height: 100px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: #495057;
+            color: #adb5bd;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Arial', sans-serif;
+            font-size: 1rem;
+            position: relative;
+        }
+        .day-card.active {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .day-card:hover {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .day-card .day-name {
+            font-size: 1rem;
+            font-weight: 400;
+            text-transform: capitalize;
+        }
+        .day-card .day-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .day-card .month-name {
+            font-size: 0.8rem;
+            text-transform: lowercase;
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+        }
+        .arrow-button {
+            color: #adb5bd;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .arrow-button:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <div class="calendar-container">
+            <button class="arrow-button" id="prevBtn">&lsaquo;</button>
+            <div id="daysContainer" style="display: flex; flex-wrap: nowrap; overflow-x: auto;">
+                <!-- Days will be dynamically rendered here -->
+            </div>
+            <button class="arrow-button" id="nextBtn">&rsaquo;</button>
+        </div>
+    </div>
+
+
+    
+    <div class="container mt-5">
+        <div class="calendar-container">
+            <table id="matches-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Team 1 ID</th>
+                        <th>Team 2 ID</th>
+                        <th>Czas rozpoczęcia</th>
+                        <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in matches_data %}
+                        <tr>
+                            <td>{{ match.id }}</td>
+                            <td>{{ match.team1_id }}</td>
+                            <td>{{ match.team2_id }}</td>
+                            <td>{{ match.time_start_match }}</td>
+                            <td><button onclick="viewDetails({{ match.id }})">Szczegóły</button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        const daysContainer = document.getElementById("daysContainer");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+    
+        // Używamy przekazanej daty z backendu
+        const dateFromURL = "{{ date }}";  // Flask przekazuje datę tutaj
+    
+        let startDate = new Date(dateFromURL || new Date()); // Jeśli nie ma daty, ustawiamy dzisiejszą
+    
+        function formatDate(date) {
+            const dayName = date.toLocaleDateString('pl-PL', { weekday: 'short' });
+            const dayNumber = date.getDate();
+            const monthName = date.toLocaleDateString('pl-PL', { month: 'short' });
+            return { dayName, dayNumber, monthName };
+        }
+    
+        function renderDays(start) {
+            daysContainer.innerHTML = "";
+    
+            // Przesuwamy datę tak, aby dzień odpowiadający `startDate` był na środku
+            let currentStart = new Date(start);
+            currentStart.setDate(start.getDate() - Math.floor(7 / 2)); // Ustawiamy odpowiedni start, aby środkowy dzień był na środku
+    
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(currentStart);
+                currentDate.setDate(currentStart.getDate() + i);
+    
+                const { dayName, dayNumber, monthName } = formatDate(currentDate);
+    
+                const dayCard = document.createElement("div");
+    
+                // Sprawdzamy, czy data z URL pasuje do bieżącego dnia
+                const isActive = startDate.toDateString() === currentDate.toDateString();
+    
+                dayCard.className = `day-card ${isActive ? "active" : ""}`;
+                dayCard.innerHTML = `
+                    <div class="day-name">${dayName}</div>
+                    <div class="day-number">${dayNumber}</div>
+                    <div class="month-name">${monthName}</div>
+                `;
+    
+                // Dodajemy event listener do kliknięcia w dany dzień
+                dayCard.addEventListener("click", function() {
+                    // Przekierowanie na URL z datą w formacie YYYY-MM-DD
+                    const dateString = currentDate.toISOString().split('T')[0]; // Zmieniamy datę na format YYYY-MM-DD
+                    window.location.href = `/test?date=${dateString}`; // Przekierowanie
+                });
+    
+                daysContainer.appendChild(dayCard);
+            }
+        }
+    
+        prevBtn.addEventListener("click", () => {
+            startDate.setDate(startDate.getDate() - 7);
+            renderDays(startDate);
+        });
+    
+        nextBtn.addEventListener("click", () => {
+            startDate.setDate(startDate.getDate() + 7);
+            renderDays(startDate);
+        });
+    
+        // Initial render
+        renderDays(startDate);
+    </script>
+    
+    <script>
+        // Funkcja do załadowania i wyświetlenia danych z tabeli matches
+        async function loadMatches() {
+            const date = document.querySelector('#date').value;  // Pobierz wybraną datę
+            if (!date) {
+                alert('Proszę wybrać datę');
+                return;
+            }
+
+            const response = await fetch(`/matches_by_date?date=${date}`);
+            const data = await response.json();
+
+            const tableBody = document.querySelector('#matches-table tbody');
+            tableBody.innerHTML = '';  // Wyczyść poprzednią zawartość tabeli
+
+            if (data.error) {
+                tableBody.innerHTML = `<tr><td colspan="5">${data.error}</td></tr>`;
+                return;
+            }
+
+            // Załaduj mecze do tabeli
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.id}</td>
+                    <td>${row.team1_id}</td>
+                    <td>${row.team2_id}</td>
+                    <td>${new Date(row.time_start_match).toLocaleString()}</td>
+                    <td><button onclick="viewDetails(${row.id})">Szczegóły</button></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function viewDetails(matchId) {
+            window.location.href = `/static/match_details.html?id=${matchId}`;
+        }
+    </script>
+
+<script>
+    function viewDetails(matchId) {
+        window.location.href = `/static/match_details.html?id=${matchId}`;
+    }
+</script>
+
+</body>
+</html>

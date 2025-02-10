@@ -1,7 +1,8 @@
-from flask import jsonify, request, send_from_directory
+from flask import jsonify, request, send_from_directory, render_template
 from bot_manager import start_bot, stop_bot, bot_running, current_match_id
-from db_manager import fetch_matches, fetch_match_by_id
+from db_manager import fetch_matches, fetch_match_by_id, fetch_matches_by_date
 from flask_limiter import Limiter
+import os
 
 def authenticate_request(req):
     """Prosta autoryzacja na podstawie klucza API."""
@@ -14,6 +15,15 @@ def configure_routes(app, limiter):
     @app.route('/')
     def serve_html():
         return send_from_directory(".", "index.html")
+
+    # Route z daty gdzie wypisuje  dane mecze
+    @app.route('/test', methods=['GET'])
+    def matches_by_date():
+        date_str = request.args.get('date')  # Pobierz datę z query param
+        if date_str:
+            matches_data = fetch_matches_by_date(date_str)  # Wywołanie funkcji pobierającej mecze
+            return render_template('test.html', matches_data=matches_data, date=date_str)
+        return "Data nie została przekazana", 400
 
     @app.route('/start', methods=['GET'])
     @limiter.limit("5 per minute")  # Limit 5 żądań na minutę na IP

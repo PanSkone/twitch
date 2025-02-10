@@ -78,3 +78,25 @@ def fetch_team_tags_by_match(match_id):
         cursor.close()
         return result if result else (None, None)  # Zwracamy tagi lub None
     return None, None
+
+# Wypisanie meczy na podstawie daty z DB
+def fetch_matches_by_date(date_str):
+    connection = create_connection()
+    if connection:
+        cursor = connection.cursor()
+        query = """
+            SELECT id, team1_id, team2_id, time_start_match
+            FROM matches
+            WHERE DATE(time_start_match) = %s
+        """
+        cursor.execute(query, (date_str,))
+        matches = cursor.fetchall()
+        cursor.close()
+
+        # Przekształcamy dane w listę słowników
+        match_list = [
+            {"id": match[0], "team1_id": match[1], "team2_id": match[2], "time_start_match": match[3]}
+            for match in matches
+        ]
+        return match_list
+    return []
