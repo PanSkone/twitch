@@ -38,18 +38,6 @@ def insert_chat_log(logs):
         connection.commit()  # Zatwierdzamy zmiany w bazie danych
         cursor.close()  # Zamykamy kursor
 
-
-# Funkcja do pobierania danych z bazy
-def fetch_matches():
-    connection = create_connection()
-    if connection:
-        cursor = connection.cursor()
-        cursor.execute("SELECT id, team1_id, team2_id, time_start_match FROM matches")  # Pobieramy dane z tabeli matches
-        rows = cursor.fetchall()  # Pobieramy wszystkie wyniki zapytania
-        cursor.close()
-        return rows
-    return []
-
 # Pobiera dane tylko jednego konkretnego meczu
 def fetch_match_by_id(match_id):
     connection = create_connection()
@@ -85,9 +73,11 @@ def fetch_matches_by_date(date_str):
     if connection:
         cursor = connection.cursor()
         query = """
-            SELECT id, team1_id, team2_id, time_start_match
-            FROM matches
-            WHERE DATE(time_start_match) = %s
+            SELECT m.id, m.team1_id, t1.name AS team1_name, m.team2_id, t2.name AS team2_name, m.time_start_match
+            FROM matches m
+            JOIN teams t1 ON m.team1_id = t1.id
+            JOIN teams t2 ON m.team2_id = t2.id
+            WHERE DATE(m.time_start_match) = %s
         """
         cursor.execute(query, (date_str,))
         matches = cursor.fetchall()
@@ -95,7 +85,7 @@ def fetch_matches_by_date(date_str):
 
         # Przekształcamy dane w listę słowników
         match_list = [
-            {"id": match[0], "team1_id": match[1], "team2_id": match[2], "time_start_match": match[3]}
+            {"id": match[0], "team1_id": match[1], "team1_name": match[2], "team2_id": match[3], "team2_name": match[4], "time_start_match": match[5]}
             for match in matches
         ]
         return match_list
